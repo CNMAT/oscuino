@@ -267,6 +267,15 @@ int OSCMessage::getBlob(int position, uint8_t * buffer, int bufferSize, int offs
   }
 }
 
+const uint8_t* OSCMessage::getBlob(int position) {
+	OSCData* datum = getOSCData(position);
+	if(!hasError()) {
+		return datum->getBlob();
+	} else {
+		return NULL;
+	}
+}
+
 uint32_t OSCMessage::getBlobLength(int position)
 {
   OSCData * datum = getOSCData(position);
@@ -408,6 +417,10 @@ int OSCMessage::getAddress(char * buffer, int offset, int len){
 	return strlen(buffer);
 }
 
+const char* OSCMessage::getAddress(){
+	return address;
+}
+
 OSCMessage& OSCMessage::setAddress(const char * _address){
     //free the previous address
     free(address); // are we sure address was allocated?
@@ -473,13 +486,12 @@ int OSCMessage::bytes(){
 =============================================================================*/
 
 bool OSCMessage::hasError(){
-    bool retError = error != OSC_OK;
+	if(error != OSC_OK) return true;
     //test each of the data
     for (int i = 0; i < dataCount; i++){
-        OSCData * datum = getOSCData(i);
-        retError |= datum->error != OSC_OK;
+        if(getOSCData(i)->error) return true;
     }
-	return retError;
+	return false;
 }
 
 OSCErrorCode OSCMessage::getError(){
